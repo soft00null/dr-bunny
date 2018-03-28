@@ -673,9 +673,11 @@ class FacebookBot {
 
                                 query.get().then(querySnapshot => {
 
-                                    querySnapshot.forEach(function (documentSnapshot) {
+                                   
 
-                                        if (documentSnapshot.exists) {  //ambulance is avilable in zipcode
+                                        if (querySnapshot) {  //ambulance is avilable in zipcode
+
+                                            querySnapshot.forEach(function (documentSnapshot) {
 
                                             // do get ambulance  data
                                             let ambulance_type = documentSnapshot.data().type;
@@ -739,7 +741,9 @@ class FacebookBot {
                                                         console.log('Error getting document driver', err);
                                                     });
 
-                                          } else if(!documentSnapshot.exists) { //no ambulance is avilable in Zip code
+                                                }); 
+
+                                          } else if() { //no ambulance is avilable in Zip code
 
                                             console.log('ambulance not avilable');
                                             //sending back response to user           
@@ -756,23 +760,11 @@ class FacebookBot {
                                             }); 
                                             
                                           }                                       
-                                      });                                     
+                                                                          
                                     }) 
                                     .catch(err => {
                                         console.log('Error getting document', err);
-                                        console.log('ambulance not avilable');
-                                        //sending back response to user           
-                                        let alert_1 = "Ambulance is not avilable in your area";                  
-                                                                
-                                        facebookBot.sendFBMessage(sender, {text: alert_1})
-                                        .then(m => {
-                                            
-                                            console.log('sent response to user');                     
-                                    
-                                        })
-                                        .catch(err => {
-                                            console.log('Error sending reply', err);
-                                        }); 
+                                       
                                     });  
 
                             });
