@@ -743,7 +743,7 @@ class FacebookBot {
 
                                                 }); 
 
-                                          } else if() { //no ambulance is avilable in Zip code
+                                          } else{ //no ambulance is avilable in Zip code
 
                                             console.log('ambulance not avilable');
                                             //sending back response to user           
