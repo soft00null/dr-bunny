@@ -673,13 +673,11 @@ class FacebookBot {
 
                                 query.get().then(querySnapshot => {
 
-                                    console.log(querySnapshot);
-                                    console.log(documentSnapshot);
+                                    querySnapshot.forEach(function (documentSnapshot) {
 
-                                    
-                                        if (querySnapshot) {  //ambulance is avilable in zipcode
+                                        console.log('documentSnapshot : '+documentSnapshot);
 
-                                            querySnapshot.forEach(function (documentSnapshot) {
+                                        if (documentSnapshot.exists) {  //ambulance is avilable in zipcode
 
                                             // do get ambulance  data
                                             let ambulance_type = documentSnapshot.data().type;
@@ -743,9 +741,7 @@ class FacebookBot {
                                                         console.log('Error getting document driver', err);
                                                     });
 
-                                                }); 
-
-                                          } else{ //no ambulance is avilable in Zip code
+                                          } else  { //no ambulance is avilable in Zip code
 
                                             console.log('ambulance not avilable');
                                             //sending back response to user           
@@ -762,7 +758,7 @@ class FacebookBot {
                                             }); 
                                             
                                           }                                       
-                                                                          
+                                      });                                     
                                     }) 
                                     .catch(err => {
                                         console.log('Error getting document', err);
