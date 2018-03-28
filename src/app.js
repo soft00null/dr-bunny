@@ -663,7 +663,7 @@ class FacebookBot {
                                         console.log(querySnapshot.exists);
                                         
 
-                                        if (querySnapshot.exists) {
+                                        if (querySnapshot.size > 0) {
 
                                             querySnapshot.forEach(function(documentSnapshot) {
 
