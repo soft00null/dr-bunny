@@ -671,15 +671,15 @@ class FacebookBot {
                                
                                let query = db.collection('ambulance').where('live', '==', true).where('area', '==', zipcode); // get ambulances avilable in users location
 
-                                query.get().then(querySnapshot => {
-
-                                    if (querySnapshot.exists) {
-
-                                    querySnapshot.forEach(function (documentSnapshot) {                                       
-
+                               
+                                    query.get()
+                                    .then(function(querySnapshot) {
                                         
+                                        if (querySnapshot.exists) {
 
-                                            // do get ambulance  data
+                                            querySnapshot.forEach(function(documentSnapshot) {
+
+                                               // do get ambulance  data
                                             let ambulance_type = documentSnapshot.data().type;
                                             let ambulance_number = documentSnapshot.data().number;
                                             let ambulance_driver = documentSnapshot.data().driver;
@@ -742,9 +742,8 @@ class FacebookBot {
                                                         console.log('Error getting document driver', err);
                                                     });
 
-                                                }); 
-
-                                          } else  { //no ambulance is avilable in Zip code
+                                            });
+                                        } else {
 
                                             console.log('ambulance not avilable');
                                             //sending back response to user           
@@ -759,14 +758,14 @@ class FacebookBot {
                                             .catch(err => {
                                                 console.log('Error sending reply', err);
                                             }); 
-                                            
-                                          }                                       
-                                                                         
-                                    }) 
-                                    .catch(err => {
-                                        console.log('Error getting document', err);
-                                       
-                                    });  
+
+                                        };
+                                    })
+                                    .catch(function(error) {
+                                        console.log("Error getting documents: ", error);
+                                    });
+
+
 
                             });
 
