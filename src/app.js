@@ -34,6 +34,19 @@ const FB_TEXT_LIMIT = 640;
 const FACEBOOK_LOCATION = "FACEBOOK_LOCATION";
 const FACEBOOK_WELCOME = "FACEBOOK_WELCOME";
 
+//default latlong
+global.latlang = 'default ';
+
+
+//TWILIO details
+
+const accountSid = 'AC18099cc16bcb7cad38177fb9ac2475b7';
+const authToken = 'f0fe3984431a458512b95c72641893da';
+const Twilio = require('twilio');
+const client = new Twilio(accountSid, authToken);
+
+
+
 
 //firebase start
 const admin = require('firebase-admin');
@@ -299,6 +312,10 @@ class FacebookBot {
                     return {name: FACEBOOK_WELCOME};
 
                 case FACEBOOK_LOCATION:
+
+                    global.latlang = Object.values(event.postback.data); //setting letlong
+                    //console.log('latlong : '+latlang);
+                
                     return {name: FACEBOOK_LOCATION, data: event.postback.data}
             }
         }
@@ -308,9 +325,12 @@ class FacebookBot {
 
     processFacebookEvent(event) {
         const sender = event.sender.id.toString();
-        const eventObject = this.getFacebookEvent(event);
+        const eventObject = this.getFacebookEvent(event);       
+        
         
         if (eventObject) {
+           
+
 
             // Handle a text message from this sender
             if (!this.sessionIds.has(sender)) {
@@ -330,19 +350,31 @@ class FacebookBot {
                         console.error('Error while subscription: ', error);
                     } else {
                         var obj = JSON.parse(response.body);
-                        console.log('First Name: '+ obj.first_name+' & Last Name:'+obj.last_name);
+                        //console.log('First Name: '+ obj.first_name+' & Last Name:'+obj.last_name);
                         //console.log(obj);
 
                         //entry to DB
-                        var docRef = db.collection('users').doc(sender);
-
-                        var setAda = docRef.set({
-                            name: obj.name,                           
-                            gender:obj.gender,
-                            verified:false                          
+                        var docRef = db.collection('users').doc(sender);                   
+                   
+                        var getDoc = docRef.get()
+                        .then(doc => {
+                            if (!doc.exists) {
+                                console.log('first time user!');
+                                var setAda = docRef.set({
+                                    name: obj.name,                           
+                                    gender:obj.gender,
+                                    mobile:'null',
+                                    verified:false                          
+                                }); 
+                            } else {
+                                console.log('user already exists');
+                            }
+                        })
+                        .catch(err => {
+                            console.log('Error getting document', err);
                         });
                           
-
+                      
                         let apiaiRequest = this.apiAiService.eventRequest(eventObject,
                             {   
                                 contexts: [
@@ -362,11 +394,14 @@ class FacebookBot {
                             });
                             //console.log(apiaiRequest);
 
+                            
+
                         this.doApiAiRequest(apiaiRequest, sender);
                     }
                 });
                 //end of user details 
             
+                
 
             
         }
@@ -404,7 +439,8 @@ class FacebookBot {
     doApiAiRequest(apiaiRequest, sender) {
         apiaiRequest.on('response', (response) => {
 
-            console.log(response);
+            //console.log(response);          
+        
 
             if (this.isDefined(response.result) && this.isDefined(response.result.fulfillment)) {
                 let responseText = response.result.fulfillment.speech;
@@ -413,30 +449,24 @@ class FacebookBot {
                 
                 let act =  response.result.action;
 
-
-
-                //console.log("Text response : "+responseText);
-                //console.log("Data response :"+responseData);
-                //console.log("Messages response :"+responseMessages);
-
-
                   //entry to DB
                   var docRef = db.collection('users').doc(sender);
-
-                  /*var setAda = docRef.set({
-                      name: obj.name,                           
-                      gender:obj.gender                          
-                  });
-                  */
+              
                   var getDoc = docRef.get()
                     .then(doc => {
                         if (!doc.exists) {
                             console.log('No such document!');
                         } else {
-                            console.log('Document data:', doc.data());
+                            //console.log('Document data:', doc.data());
                             
-                            console.log("Verified : "+doc.data().verified);
-
+                            //console.log("Verified : "+doc.data().name);
+                            //console.log("Verified : "+doc.data().gender);
+                            //console.log("Verified : "+doc.data().mobile);
+                            //console.log("Verified : "+doc.data().verified);   
+                            const u_name =  doc.data().name;
+                            const u_gender = doc.data().gender;
+                            const U_mobile = doc.data().mobile;
+                            const u_verified = doc.data().verified;                      
                             
                         }
                     })
@@ -444,18 +474,11 @@ class FacebookBot {
                         console.log('Error getting document', err);
                     });
 
-                //console.log(response.result.action);   
-
-                //console.log(response.result.parameters);  
-
-               
-
-                
+                           
                 var otp = Math.floor(1000 + Math.random() * 9000); //random otp 4 digit
 
                 //get proper action
-                
-                                                                                        
+                                                                               
                                            
                     console.log('current  action :'+act);  
                     
@@ -571,6 +594,12 @@ class FacebookBot {
                                      console.log('Error sending reply', err);
                                  });  
 
+                                 var updateNested = db.collection('users').doc(sender).update({ // update mobile number & verified as true
+                                    verified: true,
+                                    mobile: mobile_no
+
+                                });
+
                             }else{
 
                                 //sending back response to user           
@@ -594,6 +623,164 @@ class FacebookBot {
     
                         break;
     
+
+                        case 'Call_Ambulance.get_location':
+
+                            let params3 = response.result.parameters;
+
+                            let emergency = params3.emer;
+
+                            console.log("emergency : "+emergency);//user current emergency                          
+
+                            var u_location = "\'"+latlang+"\'"; 
+                            console.log("User location : "+u_location); //users current location
+
+                            var arr = latlang.toString().split(",");
+
+                            console.log("lat : "+arr[0]); //user latitude
+                            console.log("lng :"+arr[1]); //user longitude
+
+
+
+                            var request = require("request");
+
+                            var options = {
+                               method: 'GET',
+                               url: 'https://maps.googleapis.com/maps/api/geocode/json',
+                               qs: { 
+                               latlng: ''+arr[0]+','+arr[1]+'', 
+                               key: 'AIzaSyAu8KjUwVtY1aLWdlTHgZtzvdejJthiXVs' //google maps API key
+                               },
+                            };
+                             
+                            request(options, function(error, response, body) {
+                            
+                               if (error) throw new Error(error);
+                            
+                               var jsonArr = JSON.parse(body);
+                               var x=jsonArr.results[0].formatted_address;
+                            
+                               var address = jsonArr.results[0].address_components; //user ambulance request location
+                               let zipcode = parseInt(address[address.length - 1].long_name); //request location zip code
+                            
+                               //console.log(body);
+                               console.log("your location : "+x);
+                               console.log("your Zip Code : "+zipcode);
+
+                               var ambulanceRef = db.collection('ambulance');
+                               
+                               let query = db.collection('ambulance').where('live', '==', true).where('area', '==', zipcode); // get ambulances avilable in users location
+
+                                query.get().then(querySnapshot => {
+
+                                    querySnapshot.forEach(function (documentSnapshot) {
+
+                                        if (documentSnapshot.exists) {  //ambulance is avilable in zipcode
+
+                                            // do get ambulance  data
+                                            let ambulance_type = documentSnapshot.data().type;
+                                            let ambulance_number = documentSnapshot.data().number;
+                                            let ambulance_driver = documentSnapshot.data().driver;
+                                           
+                                             //entry to DB to get Ambulance driver details
+                                             
+                                                var driverRef = db.collection('drivers').doc(ambulance_driver);
+                                            
+                                                var getDriver = driverRef.get()
+                                                    .then(doc => {
+                                                        if (!doc.exists) {
+                                                            console.log('No such document!');
+                                                        } else {
+                                                           
+                                                            let driver_name =  doc.data().name;
+                                                            let driver_mobile = doc.data().mobile;
+                                                            
+                                                            //sending back response to user        waiting to get driver     
+                                                            let alert_1 = "Looking for drivers confirmation in your area";                  
+                                                                    
+                                                            facebookBot.sendFBMessage(sender, {text: alert_1})
+                                                            .then(m => {
+                                                                
+                                                                console.log('sent response to user');                     
+                                                        
+                                                            })
+                                                            .catch(err => {
+                                                                console.log('Error sending reply', err);
+                                                            }); 
+
+
+                                                            //calling driver for availabity  check
+
+                                                            client.studio.flows('FWec99649f50681d0bf75b02bbb8b8a8c8').engagements.create({
+                                                                to: '+919422903330', from: '+16508352078', 
+                                                                parameters: JSON.stringify({name: "Clément"})})
+                                                             .then(function(engagement) { 
+                                                               console.log(" driver call log :"+engagement.sid); 
+
+                                                               //sending back response to user           
+                                                               let alert_1 = "Ambulance is dispatched, following are details (1)Ambulance number : "+ambulance_number+", (2)Driver Name : "+driver_name+", (3)Driver Mobile : "+driver_mobile;                  
+                                                                    
+                                                               facebookBot.sendFBMessage(sender, {text: alert_1})
+                                                               .then(m => {
+                                                                   
+                                                                   console.log('sent response to user');                     
+                                                           
+                                                               })
+                                                               .catch(err => {
+                                                                   console.log('Error sending reply', err);
+                                                               }); 
+                                                             });
+
+
+                                                              
+                                                        }
+                                                    })
+                                                    .catch(err => {
+                                                        console.log('Error getting document driver', err);
+                                                    });
+
+                                          } else if(!documentSnapshot.exists) { //no ambulance is avilable in Zip code
+
+                                            console.log('ambulance not avilable');
+                                            //sending back response to user           
+                                            let alert_1 = "Ambulance is not avilable in your area";                  
+                                                                    
+                                            facebookBot.sendFBMessage(sender, {text: alert_1})
+                                            .then(m => {
+                                                
+                                                console.log('sent response to user');                     
+                                        
+                                            })
+                                            .catch(err => {
+                                                console.log('Error sending reply', err);
+                                            }); 
+                                            
+                                          }                                       
+                                      });                                     
+                                    }) 
+                                    .catch(err => {
+                                        console.log('Error getting document', err);
+                                        console.log('ambulance not avilable');
+                                        //sending back response to user           
+                                        let alert_1 = "Ambulance is not avilable in your area";                  
+                                                                
+                                        facebookBot.sendFBMessage(sender, {text: alert_1})
+                                        .then(m => {
+                                            
+                                            console.log('sent response to user');                     
+                                    
+                                        })
+                                        .catch(err => {
+                                            console.log('Error sending reply', err);
+                                        }); 
+                                    });  
+
+                            });
+
+
+                        break;
+
+
                         default:
                        
                         console.log('default action');  
@@ -835,7 +1022,7 @@ app.post('/webhook/', (req, res) => {
                                         };
 
                                         facebookBot.processFacebookEvent(locationEvent);
-                                        console.log(locationEvent);
+                                        //console.log(locationEvent);
                                     });
                                 }
                             }
