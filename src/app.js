@@ -673,11 +673,11 @@ class FacebookBot {
 
                                 query.get().then(querySnapshot => {
 
-                                    querySnapshot.forEach(function (documentSnapshot) {
+                                    if (querySnapshot.exists) {
 
-                                        console.log('documentSnapshot : '+documentSnapshot);
+                                    querySnapshot.forEach(function (documentSnapshot) {                                       
 
-                                        if (documentSnapshot.exists) {  //ambulance is avilable in zipcode
+                                        
 
                                             // do get ambulance  data
                                             let ambulance_type = documentSnapshot.data().type;
@@ -717,6 +717,7 @@ class FacebookBot {
                                                                 to: '+917028164099', from: '+16508352078', 
                                                                 parameters: JSON.stringify({name: "Clément"})})
                                                              .then(function(engagement) { 
+
                                                                console.log(" driver call log :"+engagement.sid); 
 
                                                                //sending back response to user           
@@ -741,6 +742,8 @@ class FacebookBot {
                                                         console.log('Error getting document driver', err);
                                                     });
 
+                                                }); 
+
                                           } else  { //no ambulance is avilable in Zip code
 
                                             console.log('ambulance not avilable');
@@ -758,7 +761,7 @@ class FacebookBot {
                                             }); 
                                             
                                           }                                       
-                                      });                                     
+                                                                         
                                     }) 
                                     .catch(err => {
                                         console.log('Error getting document', err);
