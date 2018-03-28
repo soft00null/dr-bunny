@@ -674,7 +674,9 @@ class FacebookBot {
                                 query.get().then(querySnapshot => {
 
                                     console.log(querySnapshot);
+                                    console.log(documentSnapshot);
 
+                                    
                                         if (querySnapshot) {  //ambulance is avilable in zipcode
 
                                             querySnapshot.forEach(function (documentSnapshot) {
