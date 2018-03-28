@@ -706,7 +706,7 @@ class FacebookBot {
                                                              .then(function(engagement) { 
 
 
-                                                               console.log(JSON.stringify(engagement)); 
+                                                               console.log(JSON.stringify(engagement.context.widgets.gather_1.Digits)); 
 
                                                                //sending back response to user           
                                                                let alert_1 = "Ambulance is dispatched, following are details (1)Ambulance number : "+ambulance_number+", (2)Driver Name : "+driver_name+", (3)Driver Mobile : "+driver_mobile;                  
