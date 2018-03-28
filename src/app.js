@@ -659,9 +659,7 @@ class FacebookBot {
 
                                query.get().then(querySnapshot => {
 
-                                        console.log(querySnapshot);
-                                        console.log(querySnapshot.exists);
-                                        
+                                                                           
 
                                         if (querySnapshot.size > 0) {
 
@@ -678,6 +676,7 @@ class FacebookBot {
                                             
                                                 var getDriver = driverRef.get()
                                                     .then(doc => {
+
                                                         if (!doc.exists) {
                                                             console.log('No such document!');
                                                         } else {
@@ -706,7 +705,8 @@ class FacebookBot {
                                                                 parameters: JSON.stringify({name: "Clément"})})
                                                              .then(function(engagement) { 
 
-                                                               console.log(" driver call log :"+engagement.sid); 
+
+                                                               console.log(" driver call log :"+engagement); 
 
                                                                //sending back response to user           
                                                                let alert_1 = "Ambulance is dispatched, following are details (1)Ambulance number : "+ambulance_number+", (2)Driver Name : "+driver_name+", (3)Driver Mobile : "+driver_mobile;                  
