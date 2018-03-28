@@ -673,7 +673,7 @@ class FacebookBot {
 
                                 query.get().then(querySnapshot => {
 
-                                   
+                                    console.log(querySnapshot);
 
                                         if (querySnapshot) {  //ambulance is avilable in zipcode
 
