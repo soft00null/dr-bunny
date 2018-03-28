@@ -656,11 +656,12 @@ class FacebookBot {
                                
                                let query = db.collection('ambulance').where('live', '==', true).where('area', '==', zipcode); // get ambulances avilable in users location
 
-                               
+
                                     db.collection('ambulance').where('live', '==', true).where('area', '==', zipcode)
                                     .get()
                                     .then(function(querySnapshot) {
 
+                                        console.log(querySnapshot;
                                         console.log(querySnapshot.exists);
 
                                         if (querySnapshot.exists) {
