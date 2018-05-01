@@ -489,7 +489,7 @@ class FacebookBot {
                             sendOtp.send("91"+mobile_no, "DrBuny", otp, function (error, data, res) {  
                             
     
-                                if(data.type == 'success') console.log('OTP send successfully')
+                                if(data.type == 'success') console.log('OTP sent successfully')
                                 if(data.type == 'error') console.log('OTP sending failed')
                           
         
@@ -499,7 +499,7 @@ class FacebookBot {
                                 if(data.type == 'success'){ 
 
                                     //sending back response to user           
-                                       let alert_2 = "OTP send successfully";                  
+                                       let alert_2 = "OTP sent successfully";                  
                                            
                                        facebookBot.sendFBMessage(sender, {text: alert_2})
                                        .then(mm => {
